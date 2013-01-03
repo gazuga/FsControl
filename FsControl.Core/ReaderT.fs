@@ -21,13 +21,13 @@ module ReaderT =
 open ReaderT
 
 type ReaderT<'R,'Ma> with
-    static member inline instance (Functor.Fmap  , ReaderT m    , _) = fun f -> ReaderT <| fun r -> do'(){
+    static member inline instance (Functor.Fmap  , ReaderT m    , _) = fun f -> ReaderT <| fun r -> do'{
         let! a = m r
         return (f a)}
 type ReaderT<'R,'Ma> with
     static member inline instance (Monad.Return, _:ReaderT<'r,'ma>            ) :'a  -> ReaderT<'r,'ma> = fun a -> ReaderT <| fun _ -> return' a
     static member inline instance (Monad.Bind  ,   ReaderT m, _:ReaderT<'r,'m>) :('b -> ReaderT<'r,'m>) -> ReaderT<'r,'m> = 
-        fun k -> ReaderT <| fun r -> do'(){
+        fun k -> ReaderT <| fun r -> do'{
             let! a = m r
             return! runReaderT (k a) r}
 

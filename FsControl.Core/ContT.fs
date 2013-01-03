@@ -30,7 +30,7 @@ type ContT<'Mr,'A> with
 
     static member instance (MonadReader.Ask, _:ContT<Reader<'a,'b>,'a>) = fun () -> lift (ask())  :ContT<Reader<'a,'b>,'a>
     static member instance (MonadReader.Local, ContT m, _:ContT<Reader<'a,'b>,'t>) : ('a -> 'b) -> ContT<Reader<'a,'b>,'t> =
-        fun f -> ContT <| fun c -> do'(){     
+        fun f -> ContT <| fun c -> do'{     
             let! r = ask()
             return! local f (m (local (const' r) << c))}
     

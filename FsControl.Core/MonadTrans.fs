@@ -17,12 +17,12 @@ type OptionT<'Ma> with
     static member inline instance (Functor.Fmap, OptionT x :OptionT<'ma>, _) = fun (f:'a->'b) -> OptionT (fmap (Option.map f) x) :OptionT<'mb>
     static member inline instance (Monad.Return,            _:OptionT<'ma>) = OptionT << return' << Some :'a -> OptionT<'ma>
     static member inline instance (Monad.Bind  , OptionT x :OptionT<'ma>, _:OptionT<'mb>) = 
-        fun (f: 'a -> OptionT<'mb>) -> (OptionT <| do'() {
+        fun (f: 'a -> OptionT<'mb>) -> (OptionT <| do' {
             let! maybe_value = x
             return! match maybe_value with Some value -> runOptionT (f value) | _ -> return' None}) :OptionT<'mb>
 
     static member inline instance (MonadPlus.Mzero, _:OptionT<_>) = fun ()          -> OptionT (return' None)
-    static member inline instance (MonadPlus.Mplus, OptionT x, _) = fun (OptionT y) -> OptionT <| do'() {
+    static member inline instance (MonadPlus.Mplus, OptionT x, _) = fun (OptionT y) -> OptionT <| do' {
             let! maybe_value = x
             return! match maybe_value with Some value -> x | _ -> y}
 
@@ -42,7 +42,7 @@ type ListT<'Ma> with
             (ListT (x >>= mapM(runListT << k) >>= (concat >> return'))) :ListT<'mb>
 
     static member inline instance (MonadPlus.Mzero, _:ListT<_>) = fun ()        -> ListT (return' [])
-    static member inline instance (MonadPlus.Mplus, ListT x, _) = fun (ListT y) -> ListT <| do'() {
+    static member inline instance (MonadPlus.Mplus, ListT x, _) = fun (ListT y) -> ListT <| do' {
         let! a = x
         let! b = y
         return (a @ b)}

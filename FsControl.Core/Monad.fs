@@ -49,4 +49,6 @@ module Monad =
         member inline b.Bind(p,rest) = p >>= rest
         member        b.Let (p,rest) = rest p
         member    b.ReturnFrom(expr) = expr
-    let inline  internal do'() = new DoNotationBuilder()
+
+    
+    let do' = new DoNotationBuilder()

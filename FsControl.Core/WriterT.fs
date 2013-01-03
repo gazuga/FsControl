@@ -17,12 +17,12 @@ type WriterT<'WMa> = WriterT of 'WMa
 module WriterT =
     let runWriterT   (WriterT x) = x
     let mapWriterT f (WriterT m) = WriterT(f m)
-    let inline internal execWriter   (WriterT m) = do'(){
+    let inline internal execWriter   (WriterT m) = do'{
         let! (_, w) = m
         return w}
 
 type WriterT<'WMa> with
-    static member inline instance (Functor.Fmap, WriterT m, _) = fun f -> WriterT <| do'(){
+    static member inline instance (Functor.Fmap, WriterT m, _) = fun f -> WriterT <| do'{
         let! (a, w) = m
         return (f a, w)}
 
@@ -31,7 +31,7 @@ let inline runWriterT   (WriterT x) = x
 type WriterT<'WMa> with
     static member inline instance (Monad.Return,                 _:WriterT<'wma>) :'a -> WriterT<'wma> = fun a -> WriterT (return' (a, mempty()))
     static member inline instance (Monad.Bind, WriterT (m:'wma), _:WriterT<'wmb>) :('a -> WriterT<'wmb>) -> WriterT<'wmb> =
-        fun k -> WriterT <| do'(){
+        fun k -> WriterT <| do'{
             let! (a, w ) = m
             let! (b, w') = runWriterT (k a)
             return (b, w </mappend/> w')}
@@ -40,14 +40,14 @@ type WriterT<'WMa> with
     static member inline instance (MonadPlus.Mplus,   WriterT m, _) = fun (WriterT n) -> WriterT(mplus m n)
 
     static member inline instance (MonadWriter.Tell, _:WriterT<_> ) = fun w -> WriterT(return' ((), w))
-    static member inline instance (MonadWriter.Listen, WriterT m, _:WriterT<_>) = WriterT <| do'(){
+    static member inline instance (MonadWriter.Listen, WriterT m, _:WriterT<_>) = WriterT <| do'{
         let! (a, w) = m
         return ((a, w), w)}
-    static member inline instance (MonadWriter.Pass  , WriterT m, _:WriterT<_>) = WriterT <| do'() {
+    static member inline instance (MonadWriter.Pass  , WriterT m, _:WriterT<_>) = WriterT <| do' {
         let! ((a, f), w) = m
         return (a, f w)}
 
-    static member inline instance (MonadTrans.Lift   , _:WriterT<'wma>) : 'ma -> WriterT<'wma> = fun m -> WriterT <| do'() {
+    static member inline instance (MonadTrans.Lift   , _:WriterT<'wma>) : 'ma -> WriterT<'wma> = fun m -> WriterT <| do' {
         let! a = m
         return (a, mempty())}
     
