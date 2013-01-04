@@ -27,7 +27,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
-    <OutputPath>C:\Users\tgawron\Documents\Visual Studio 2012\Projects\Gazuga.Accelerator\lib\</OutputPath>
+    <OutputPath>F:\accelerator\lib\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Release\FsControl.Core.XML</DocumentationFile>
