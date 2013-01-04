@@ -51,22 +51,22 @@ module Monad =
         member b.ReturnFrom(expr) = expr
         member inline b.Zero() = b.Return ()
         member inline b.Combine(r1, r2) = b.Bind(r1, fun () -> r2)
-        member b.TryWith(m, h) =
-            fun env -> try m env
-                       with e -> (h e) env
-        member b.TryFinally(m, compensation) =
-            fun env -> try m env
-                       finally compensation()
-        member b.Using(res:#IDisposable, body) =
-            b.TryFinally(body res, (fun () -> match res with null -> () | disp -> disp.Dispose()))
         member inline b.Delay(f) = b.Bind(b.Return (), f)
-        member inline b.While(guard, m) =
+        member b.TryWith(m: ^t, h: ^t) : ^t =
+            try  b.Delay(fun () -> m) 
+            with h
+        member b.TryFinally(m: ^t, compensation) : ^t =
+            try m
+            finally compensation()
+        member b.Using(res:#IDisposable, body: ^t) : ^t =
+            b.TryFinally(body, (fun () -> match res with null -> () | disp -> disp.Dispose()))
+        member inline b.While(guard, m: ^t) : ^t =
             let t = ref m
             while guard() do
                 t := b.Bind(m, (fun () -> !t))
-            !t
-        member inline b.For(sequence:seq<_>, body) =
-            b.Using(sequence.GetEnumerator(),
-                (fun enum -> b.While(enum.MoveNext, b.Delay(fun () -> body enum.Current))))
-
+            b.Zero()
+//        member inline b.For(sequence:seq<'s>, body: 's -> ^t) : ^t =
+//            b.Using(sequence.GetEnumerator(),
+//                (fun (enum: System.Collections.IEnumerator) -> b.While(enum.MoveNext, b.Delay(fun () -> body enum.Current))))
+       
     let do' = new DoNotationBuilder()
