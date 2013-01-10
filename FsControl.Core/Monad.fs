@@ -15,6 +15,8 @@ module Monad =
         //Restricted Monad
         static member instance (Return, _:'a Nullable  ) = fun (x:'a) -> Nullable x
 
+    let returnI = Return
+     
     type Bind = Bind with
         static member instance (Bind, x:option<_>   , _:option<'b> ) = fun (f:_->option<'b>) -> Option.bind  f x
         static member instance (Bind, x:List<_>     , _:List<'b>   ) = fun (f:_->List<'b>  ) -> List.collect f x
@@ -27,8 +29,10 @@ module Monad =
         static member instance (Bind, x:Nullable<_> , _:'b Nullable) = fun f ->
             if x.HasValue then f x.Value else Nullable() : Nullable<'b>
 
-    let inline internal return' x = Inline.instance Return x
-    let inline internal (>>=) x (f:_->'R) : 'R = Inline.instance (Bind, x) f
+    let bind = Bind
+
+    let inline internal return' x = Inline.instance returnI x
+    let inline internal (>>=) x (f:_->'R) : 'R = Inline.instance (bind, x) f
 
     let inline internal sequence ms =
         let k m m' = m >>= fun (x:'a) -> m' >>= fun xs -> (return' :list<'a> -> 'M) (List.Cons(x,xs))
@@ -52,14 +56,6 @@ module Monad =
         member inline b.Zero() = b.Return ()
         member inline b.Combine(r1, r2) = b.Bind(r1, fun () -> r2)
         member inline b.Delay(f) = b.Bind(b.Return (), f)
-//        member b.TryWith(m: ^t, h: 'e -> ^t) : ^t =
-//            try  b.Delay(fun () -> m)
-//            with | (ex: 'e) -> h ex
-//        member b.TryFinally(m: ^t, compensation) : ^t =
-//            try m
-//            finally compensation()
-//        member b.Using(res:#IDisposable, body: ^t) : ^t =
-//            b.TryFinally(body, (fun () -> match res with null -> () | disp -> disp.Dispose()))
         member inline b.While(guard, m: ^t) : ^t =
             let t = ref m
             while guard() do
