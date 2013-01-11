@@ -23,4 +23,6 @@ module Functor =
         static member instance (Fmap, x:Nullable<_>, _) = fun f -> if x.HasValue then Nullable(f x.Value) else Nullable()
         static member instance (Fmap, x:Choice<_,_>, _) = fun f -> match x with Choice2Of2 x -> Choice2Of2(f x) | x -> x
 
-    let inline internal fmap   f x = Inline.instance (Fmap, x) f
+    let fmapI = Fmap
+
+    let inline internal fmap f x = Inline.instance (fmapI, x) f

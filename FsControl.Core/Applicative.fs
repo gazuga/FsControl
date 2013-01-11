@@ -26,8 +26,13 @@ module Applicative =
             | (Choice2Of2 a, _)            -> Choice2Of2 a
             | (_, Choice2Of2 b)            -> Choice2Of2 b :Choice<'b,'e>
 
-    let inline internal pure' x   = Inline.instance Pure x
-    let inline internal (<*>) x y = Inline.instance (Ap, x, y) ()
+    let pureI = Pure
+
+    let apI = Ap
+
+    let inline internal pure' x   = Inline.instance pureI x
+
+    let inline internal (<*>) x y = Inline.instance (apI, x, y) ()
 
 module Alternative =
     open Applicative
