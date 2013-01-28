@@ -18,8 +18,8 @@ module Category =
         static member        instance (Comp,         f, _) = fun (g: _ -> _) ->          g >>  f
         static member inline instance (Comp, Kleisli f, _) = fun (Kleisli g) -> Kleisli (g >=> f)
 
-    let inline internal id'() = Inline.instance Id ()
-    let inline internal (<<<) f g = Inline.instance (Comp, f) g
+    let inline id'() = Inline.instance Id ()
+    let inline (<<<) f g = Inline.instance (Comp, f) g
 
 open Category
 
@@ -32,17 +32,16 @@ module Arrow =
         static member        instance (First, f        , _: 'a -> 'b   ) = fun () -> fun (x,y) -> (f x, y)
         static member inline instance (First, Kleisli f, _:Kleisli<_,_>) = fun () -> Kleisli (fun (b,d) -> f b >>= fun c -> return' (c,d))
 
-    let inline internal arr   f = Inline.instance  Arr    f
+    let inline arr f = Inline.instance  Arr    f
 
 open Arrow
 
 module ArrowChoice =
-
     type AcEither = AcEither with
         static member inline instance (AcEither, _:Choice<_,_>->_) = fun (         f ,          g ) ->          choice f g
         static member inline instance (AcEither, _:Kleisli<_,_>  ) = fun ((Kleisli f), (Kleisli g)) -> Kleisli (choice f g)
 
-    let inline internal (|||) f g = Inline.instance AcEither (f, g)
+    let inline (|||) f g = Inline.instance AcEither (f, g)
 
     type AcMerge = AcMerge with
         static member inline instance (AcMerge, _: _->    Choice<_,_>      ) = fun (f, g)  ->  (Choice2Of2 << f) ||| (Choice1Of2 << g)
@@ -64,3 +63,9 @@ module ArrowApply =
     type Apply = Apply with
         static member instance (Apply, _: ('a -> 'b) * 'a -> 'b          ) = fun () ->          fun (f,x)          -> f x
         static member instance (Apply, _: Kleisli<Kleisli<'a,'b> * 'a,'b>) = fun () -> Kleisli (fun (Kleisli f, x) -> f x)
+
+[<AutoOpen>]
+module ArrowOperators =
+    let inline arr f = Arrow.arr f
+    let inline (+++) f g = Inline.instance ArrowChoice.AcMerge (f, g)
+    let inline (|||) f g = Inline.instance ArrowChoice.AcEither (f, g)
